@@ -1,5 +1,6 @@
 package com.example.account.dto;
 
+import com.example.account.aop.AccountLockIdInterface;
 import com.example.account.type.TransactionResultType;
 import lombok.*;
 
@@ -7,6 +8,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
@@ -20,7 +22,7 @@ public class UseBalance {
     @Getter
     @Setter
     @AllArgsConstructor
-    public static class Request{
+    public static class Request implements AccountLockIdInterface{
         @NotNull
         @Min(1)
         private Long userId;

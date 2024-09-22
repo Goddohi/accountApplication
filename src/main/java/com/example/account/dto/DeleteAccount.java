@@ -1,5 +1,6 @@
 package com.example.account.dto;
 
+import com.example.account.aop.AccountLockIdInterface;
 import lombok.*;
 
 import javax.validation.constraints.Min;
@@ -12,7 +13,7 @@ public class DeleteAccount {
     @Getter
     @Setter
     @AllArgsConstructor
-    public static class Request{
+    public static class Request implements AccountLockIdInterface {
         @NotNull
         @Min(1)
         private Long userId;
