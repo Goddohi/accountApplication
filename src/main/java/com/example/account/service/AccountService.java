@@ -16,10 +16,13 @@ import javax.transaction.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import static com.example.account.type.AccountStatus.IN_USE;
+import static com.example.account.type.ErrorCode.USER_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +37,7 @@ public class AccountService {
     @Transactional
     public AccountDto createAccount(Long userId, Long initialBalance) {
         AccountUser accountUser = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
 
         // 사용자 계좌 수 확인
         long accountCount = accountRepository.countByAccountUserId(userId);
@@ -108,7 +111,7 @@ public class AccountService {
     @Transactional
     public AccountDto deleteAccount(Long userId, String accountNumber) {
         AccountUser accountUser = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
 
@@ -130,5 +133,21 @@ public class AccountService {
         if(account.getBalance()>0){
             throw new AccountException(ErrorCode.BALANCE_NOT_EMPTY);
         }
+    }
+
+    //Lazy
+    @Transactional
+    public List<AccountDto> getAccountsByUserId(Long userId) {
+        AccountUser accountUser = accountUserRepository.findById(userId)
+                // ErrorCode에 import에 정적으로 하면 가능
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+
+       List<Account> accounts = accountRepository.findByAccountUser(accountUser);
+
+       //List account 를 List accountdto로 변경
+       return accounts.stream()
+               .map(AccountDto::fromEntity)
+               .collect(Collectors.toList());
+
     }
 }
