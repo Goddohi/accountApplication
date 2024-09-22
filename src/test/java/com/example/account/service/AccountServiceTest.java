@@ -3,9 +3,11 @@ package com.example.account.service;
 import com.example.account.domain.Account;
 import com.example.account.domain.AccountUser;
 import com.example.account.dto.AccountDto;
+import com.example.account.exception.AccountException;
 import com.example.account.repository.AccountUserRepository;
 import com.example.account.type.AccountStatus;
 import com.example.account.repository.AccountRepository;
+import com.example.account.type.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,8 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -64,6 +65,62 @@ class AccountServiceTest {
         //랜덤으로 잘나오는지 확인완료
         System.out.println(accountCaptor.getValue().getAccountNumber());
     }
+
+
+
+    @Test
+    @DisplayName("해당유저없음-계좌 생성 실패")
+    void createAccount_UserNotFound() {
+        //given
+        AccountUser accountUser = AccountUser.builder()
+                .id(12L)
+                .name("pobi").build();
+
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+
+        //when
+        AccountException exception = assertThrows(AccountException.class
+                , () -> accountService.createAccount(1L, 1000L));
+        //then
+        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
+
+//
+
+    @Test
+    void deleteAccountSuccess(){
+        //given
+        AccountUser accountUser = AccountUser.builder()
+                .id(12L)
+                .name("pobi").build();
+
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.of(accountUser));
+
+        given(accountRepository.findByAccountNumber(anyString())).willReturn(
+                Optional.of(Account.builder()
+                        .accountUser(accountUser)
+                        .accountNumber("1000000012")
+                        .balance(0L)
+                        .build()));
+
+
+        //when
+        AccountDto accountDto = accountService.deleteAccount(1L,"1234567890");
+        //then
+        assertEquals(12L, accountDto.getUserid());
+    }
+
+
+
+
+
+
+
+
+
 
 
 
